@@ -55,6 +55,26 @@ export class View {
         this.context.fillText("Press ENTER to start", this.canvas.width / 2, this.canvas.height / 2);
     }
 
+    winScreen() {
+        this.context.beginPath();
+        this.context.rect(this.canvas.width / 2 - 100, this.canvas.height / 2 - 25 - 12, 200, 50);
+        this.context.fillStyle = "#888";
+        this.context.fill();
+
+        this.context.fillStyle = "green";
+        this.context.fillText("You WIN!", this.canvas.width / 2, this.canvas.height / 2);
+    }
+
+    gameOverScreen() {
+        this.context.beginPath();
+        this.context.rect(this.canvas.width / 2 - 100, this.canvas.height / 2 - 25 - 12, 200, 50);
+        this.context.fillStyle = "#888";
+        this.context.fill();
+
+        this.context.fillStyle = "red";
+        this.context.fillText("You LOST!", this.canvas.width / 2, this.canvas.height / 2);
+    }
+
     drawArc(x, y, radius, color) {
         this.context.beginPath();
         this.context.arc(x, y, radius, 0, Math.PI * 2);
@@ -73,7 +93,6 @@ export class View {
             this.blocks[i-1] = new Color(x, y);
             x = x + radius * 2 + this.BLOCK.margin;
 
-        
             if (i % 4 == 0) {
                 y = y + radius * 2 + this.BLOCK.margin;
                 x = this.widthColorsPanel;
@@ -85,7 +104,6 @@ export class View {
         let radius = this.BLOCK.radius / 2;
         let x = this.canvas.width - this.widthTipsPanel + 10;
         let y = this.BLOCK.midblockY;
-
         let amount = this.ROW * this.COLUMN;
 
         for (let i = 1; i <= amount; i++) {
@@ -98,14 +116,6 @@ export class View {
                 x = this.canvas.width - this.widthTipsPanel + 10;
             }
         }
-    }
-
-    paintBlock() {
-        let width = this.radiusBlock;
-        let startX = this.widthColorsPanel;
-        let startY = this.midblockY
-
-        this.drawArc(width, startX, startY, this.COLORS[1]);
     }
 
     panelOfColors() {
