@@ -1,4 +1,4 @@
-import { Color } from "./Color.js";
+import { Panel } from "./Panel.js";
 
 export class View {
     COLORS = {
@@ -23,11 +23,6 @@ export class View {
     WIDTH_TIPS_PANEL = (this.NORMAL_BLOCK.radius / 2 + 5) * 4 + 60;
     HEIGHT_PANEL = (this.NORMAL_BLOCK.radius + 10) * 11 + 200;
 
-    blocks = new Array();
-    tips = new Array();
-    colorsToChoose = new Array();
-    result = new Array();
-
     blocksPanel;
     tipsPanel;
     colorsPanel;
@@ -45,6 +40,22 @@ export class View {
 
         this.context.font = "24px Arial";
         this.context.textAlign = "center";
+
+        this.definePanels();
+    }
+
+    definePanels() {
+        this.blocksPanel = new Panel(this.WIDTH_COLORS_PANEL, this.NORMAL_BLOCK.radius * 2 + this.NORMAL_BLOCK.margin,
+            30, this.NORMAL_BLOCK.radius * 2 + this.NORMAL_BLOCK.margin, this.NORMAL_BLOCK.radius);
+
+        this.tipsPanel = new Panel(this.canvas.width - this.WIDTH_TIPS_PANEL + 10, this.NORMAL_BLOCK.radius + this.NORMAL_BLOCK.margin / 2,
+            30, this.NORMAL_BLOCK.radius * 2 + this.NORMAL_BLOCK.margin, this.NORMAL_BLOCK.radius / 2);
+
+        this.colorsPanel = new Panel(50, 0, 30 + this.NORMAL_BLOCK.radius * 2 + this.NORMAL_BLOCK.margin,
+            this.NORMAL_BLOCK.radius * 2 + this.NORMAL_BLOCK.margin, this.NORMAL_BLOCK.radius);
+
+        this.resultPanel = new Panel(this.WIDTH_COLORS_PANEL, this.NORMAL_BLOCK.radius * 2 + this.NORMAL_BLOCK.margin,
+            this.HEIGHT_PANEL - 30, 0, this.NORMAL_BLOCK.radius);
     }
 
     renderScreen(text, color) {
@@ -64,75 +75,46 @@ export class View {
         this.context.fill();
     }
 
-    clearContext() {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    }
-
-    panel() {
-        let x = this.WIDTH_COLORS_PANEL;
-        let y = 30;
-        let amount = this.ROW * this.COLUMN;
-
-        for (let i = 1; i <= amount; i++) {
-            this.blocks[i-1] = new Color(x, y, this.NORMAL_BLOCK.radius, '#999');
-            this.drawArc(this.blocks[i-1].getBlock());
-
-            x = x + this.NORMAL_BLOCK.radius * 2 + this.NORMAL_BLOCK.margin;
-
-            if (i % 4 == 0) {
-                y = y + this.NORMAL_BLOCK.radius * 2 + this.NORMAL_BLOCK.margin;
-                x = this.WIDTH_COLORS_PANEL;
-            }
-        }
-    }
-
-    panelOfTips() {
-        let radius = this.NORMAL_BLOCK.radius / 2;
-        let x = this.canvas.width - this.WIDTH_TIPS_PANEL + 10;
-        let y = 30;
-        let amount = this.ROW * this.COLUMN;
-
-        for (let i = 1; i <= amount; i++) {
-            this.tips[i-1] = new Color(x, y, radius, '#444');
-            this.drawArc(this.tips[i-1].getBlock());
-
-            x = x + radius * 2 + this.NORMAL_BLOCK.margin / 2;
-
-            if (i % 4 == 0) {
-                y = y + this.NORMAL_BLOCK.radius * 2 + this.NORMAL_BLOCK.margin;
-                x = this.canvas.width - this.WIDTH_TIPS_PANEL + 10;
-            }
-        }
-    }
-
-    panelOfColors() {
-        let x = 50;
-        let y = 30 + this.NORMAL_BLOCK.radius * 2 + this.NORMAL_BLOCK.margin;
-
-        for (let i = 1; i <= 8; i++) {
-            this.colorsToChoose[i-1] = new Color(x, y, this.NORMAL_BLOCK.radius, this.COLORS[i]);
-            this.drawArc(this.colorsToChoose[i-1].getBlock());
-
-            y = y + this.NORMAL_BLOCK.radius * 2 + this.NORMAL_BLOCK.margin;
-        }
-    }
-
-    panelOfFinalResult() {
-        let x = this.WIDTH_COLORS_PANEL;
-        let y = this.HEIGHT_PANEL - 30;
-
-        for (let i = 1; i <= 4; i++) {
-            this.result[i-1] = new Color(x, y, this.NORMAL_BLOCK.radius, '#444');
-            this.drawArc(this.result[i-1].getBlock());
-
-            x = x + this.NORMAL_BLOCK.radius * 2 + this.NORMAL_BLOCK.margin;
-        }
-    }
-
     drawArc(block) {
         this.context.beginPath();
         this.context.arc(block.midblockX, block.midblockY, block.radius, 0, Math.PI * 2);
         this.context.fillStyle = block.color;
         this.context.fill();
+    }
+
+    clearContext() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.renderPanel();
+    }
+
+    renderPanel() {
+        let line = 1;
+        let id = 1;
+
+        for (let i = 1; i <= this.ROW * this.COLUMN; i++) {
+            this.renderSingleBlock(this.blocksPanel, line - 1, id - 1, i, '#999');
+            this.renderSingleBlock(this.tipsPanel, line - 1, id - 1, i, '#444');
+
+            id++;
+
+            if (i % 4 == 0) {
+                id = 1;
+                line++;
+            }
+        }
+        
+
+        for (let i = 1; i <= this.COLUMN; i++) {
+            this.renderSingleBlock(this.resultPanel, 0, i-1, i, '#444');
+        }
+
+        for (let i = 1; i <= 8; i++) {
+            this.renderSingleBlock(this.colorsPanel, i-1, 0, i, this.COLORS[i]);
+        }
+    }
+
+    renderSingleBlock(arr, line, col, id, color) {
+        arr.addBlock(line, col, color);
+        this.drawArc(arr.getBlock(id - 1));
     }
 }
