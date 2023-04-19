@@ -17,11 +17,4 @@ export class Color {
     getColor() {
         return this.color;
     }
-
-    getBlock() {
-        return {midblockX: this.midblockX, 
-                midblockY: this.midblockY, 
-                radius: this.radius, 
-                color: this.color};
-    }
 }
