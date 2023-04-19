@@ -1,42 +1,41 @@
 export class Game {
     trial = 1;
-    chosenColor;
+    color;
+
+    panel;
+    tips;
+    colos;
+    result;
+
 
     constructor(view) {
         this.view = view;
         this.isPlaying = false;
         this.view.renderScreen("Press ENTER to start", "#222");
-
         document.addEventListener("keydown", this.handleKeyDown.bind(this));
     }
 
     handleKeyDown(event) {
         switch (event.keyCode) {
             case 13:
-                this.view.clearContext();
+                console.log('tak');
                 this.start();
         }
     }
 
     start() {
         this.trial = 1;
-
-        this.view.panel();
-        this.view.panelOfTips();
-
-        this.view.panelOfColors();
-        this.view.panelOfFinalResult();
-
+        this.view.clearContext();
+        this.view.renderPanel();
         this.addColorsToResult();
-
         this.view.canvas.addEventListener("click", this.handleClick.bind(this));
     }
 
     addColorsToResult() {
         let colorsId = this.createLines();
 
-        for (let i = 0; i < this.view.result.length; i++) {
-            this.view.result[i].setColor(this.view.COLORS[colorsId[i]]);
+        for (let i = 0; i < this.view.resultPanel.blocks.length; i++) {
+            this.view.resultPanel.blocks[i].setColor(this.view.COLORS[colorsId[i]]);
         }
     }
 
@@ -62,22 +61,21 @@ export class Game {
     }
 
     chooseTheColor(pageX, pageY) {
-        let radius = this.view.NORMAL_BLOCK.radius;
+        for (let i = 0; i < this.view.colorsPanel.blocks.length; i++) {
+            let border = this.getBordersOfBlock(this.view.colorsPanel.blocks, i, this.view.NORMAL_BLOCK.radius);
 
-        for (let i = 0; i < this.view.colorsToChoose.length; i++) {
-            let border = this.getBordersOfBlock(this.view.colorsToChoose, i, radius);
-            if (this.checkCoordinates(pageX, pageY, border)) this.color = this.view.colorsToChoose[i].color;
+            if (this.checkCoordinates(pageX, pageY, border)) 
+                this.color = this.view.colorsPanel.blocks[i].color;
         }
     }
 
     chooseTheBlock(pageX, pageY) {
-        let radius = this.view.NORMAL_BLOCK.radius;
         for (let i = (this.trial - 1) * 4; i < (this.trial) * 4; i++) {
-            let border = this.getBordersOfBlock(this.view.blocks, i, radius);
+            let border = this.getBordersOfBlock(this.view.blocksPanel.blocks, i, this.view.NORMAL_BLOCK.radius);
 
             if (this.checkCoordinates(pageX, pageY, border) && this.color) {
-                this.view.blocks[i].setColor(this.color);
-                this.view.drawArc(this.view.blocks[i].getBlock());
+                this.view.blocksPanel.blocks[i].setColor(this.color);
+                this.view.drawArc(this.view.blocksPanel.blocks[i]);
                 this.color = '';
 
                 if (this.isBusyLine()) {
@@ -105,31 +103,41 @@ export class Game {
     }
 
     isBusyLine() {
+        let min = (this.trial - 1) * 4;
+        let max = (this.trial) * 4;
+        let blocks = this.view.blocksPanel.blocks;
+
+        blocks = blocks.filter(el => (blocks.indexOf(el) >= min && blocks.indexOf(el) < max) && el.getColor() != '#999');
+       
+        return blocks.length == this.view.COLUMN;
+
+
+        /*
         for (let i = (this.trial - 1) * 4; i < (this.trial) * 4; i++) {
-            if (this.view.blocks[i].getColor() == '#999') {
+            if (this.view.blocksPanel.blocks[i].getColor() == '#999') {
                 return false;
             }
         }
         return true;
+        */
     }
 
     isEnd() {
         let goodArc = 0;
         for (let i = (this.trial - 1) * 4; i < (this.trial) * 4; i++) {
-            if (this.view.tips[i].getColor() == 'yellow') {
+            if (this.view.tipsPanel.blocks[i].getColor() == 'yellow') {
                 goodArc++;
             }
         }
 
         if (goodArc == 4) this.view.renderScreen("You WIN!", "green");
         else if (this.trial >= this.view.ROW) {
-            for (let i = 0; i < this.view.result.length; i++) {
-                this.view.drawArc(this.view.result[i].getBlock());
+            console.log('blad');
+            this.view.resultPanel.blocks.forEach(el => this.view.drawArc(el));
 
-                this.view.renderScreen("You LOST!", "red");
-                this.view.canvas.removeEventListener("click", this.handleClick, true);
-            }
+            this.view.renderScreen("You LOST!", "red");
         }
+        this.view.canvas.removeEventListener("click", this.handleClick, true);
     }
 
     createLines() {
@@ -152,19 +160,17 @@ export class Game {
     }
 
     showTips(trial) {
-        let resultColor = this.view.result;
-        let blocks = this.view.blocks;
+        let resultColor = this.view.resultPanel.blocks;
+        let blocks = this.view.blocksPanel.blocks;
 
-        console.log(resultColor);
-        console.log(blocks);
         let resultId = 0;
         for (let i = (trial - 1) * 4; i < trial * 4; i++) {
             if (resultColor[resultId].getColor() == blocks[i].getColor()) {
-                this.view.tips[i].setColor('yellow');
-                this.view.drawArc(this.view.tips[i].getBlock());
-            } else if (resultColor.find(el => el.getColor() == blocks[i].getColor()) && this.view.tips[i].getColor() != 'yellow') {
-                this.view.tips[i].setColor('blue');
-                this.view.drawArc(this.view.tips[i].getBlock());
+                this.view.tipsPanel.blocks[i].setColor('yellow');
+                this.view.drawArc(this.view.tipsPanel.blocks[i]);
+            } else if (resultColor.find(el => el.getColor() == blocks[i].getColor()) && this.view.tipsPanel.blocks[i].getColor() != 'yellow') {
+                this.view.tipsPanel.blocks[i].setColor('blue');
+                this.view.drawArc(this.view.tipsPanel.blocks[i]);
             }
             resultId++;
         }
