@@ -27,4 +27,8 @@ export class Panel {
     getBlock(id) {
         return this.blocks[id];
     }
+
+    clearPanel() {
+        this.blocks = new Array();
+    }
 }

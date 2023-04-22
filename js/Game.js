@@ -12,13 +12,13 @@ export class Game {
         this.view = view;
         this.isPlaying = false;
         this.view.renderScreen("Press ENTER to start", "#222");
+
         document.addEventListener("keydown", this.handleKeyDown.bind(this));
     }
 
     handleKeyDown(event) {
         switch (event.keyCode) {
             case 13:
-                console.log('tak');
                 this.start();
         }
     }
@@ -26,7 +26,6 @@ export class Game {
     start() {
         this.trial = 1;
         this.view.clearContext();
-        this.view.renderPanel();
         this.addColorsToResult();
         this.view.canvas.addEventListener("click", this.handleClick.bind(this));
     }
@@ -79,7 +78,7 @@ export class Game {
                 this.color = '';
 
                 if (this.isBusyLine()) {
-                    this.showTips(this.trial);
+                    this.showTips();
                     this.isEnd();
                     this.trial++;
                     return;
@@ -110,31 +109,19 @@ export class Game {
         blocks = blocks.filter(el => (blocks.indexOf(el) >= min && blocks.indexOf(el) < max) && el.getColor() != '#999');
        
         return blocks.length == this.view.COLUMN;
-
-
-        /*
-        for (let i = (this.trial - 1) * 4; i < (this.trial) * 4; i++) {
-            if (this.view.blocksPanel.blocks[i].getColor() == '#999') {
-                return false;
-            }
-        }
-        return true;
-        */
     }
 
     isEnd() {
-        let goodArc = 0;
-        for (let i = (this.trial - 1) * 4; i < (this.trial) * 4; i++) {
-            if (this.view.tipsPanel.blocks[i].getColor() == 'yellow') {
-                goodArc++;
-            }
-        }
+        let min = (this.trial - 1) * 4;
+        let max = (this.trial) * 4;
+        let blocks = this.view.tipsPanel.blocks;
 
-        if (goodArc == 4) this.view.renderScreen("You WIN!", "green");
+        blocks = blocks.filter(el => (blocks.indexOf(el) >= min && blocks.indexOf(el) < max) && el.getColor() == 'yellow');
+
+        if(blocks.length == 4) 
+            this.view.renderScreen("You WIN!", "green");
         else if (this.trial >= this.view.ROW) {
-            console.log('blad');
             this.view.resultPanel.blocks.forEach(el => this.view.drawArc(el));
-
             this.view.renderScreen("You LOST!", "red");
         }
         this.view.canvas.removeEventListener("click", this.handleClick, true);
@@ -150,21 +137,14 @@ export class Game {
         return colorsId;
     }
 
-    isGoodTrial(line, result) {
-        for (let i = 0; i < line.lenght(); i++) {
-            if (line[i].getColor() != result[i].getColor()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    showTips(trial) {
+    showTips() {
         let resultColor = this.view.resultPanel.blocks;
         let blocks = this.view.blocksPanel.blocks;
 
-        let resultId = 0;
-        for (let i = (trial - 1) * 4; i < trial * 4; i++) {
+        let min = (this.trial - 1) * 4;
+        let max = (this.trial) * 4;
+
+        for (let i = min, resultId = 0; i < max; i++, resultId++) {
             if (resultColor[resultId].getColor() == blocks[i].getColor()) {
                 this.view.tipsPanel.blocks[i].setColor('yellow');
                 this.view.drawArc(this.view.tipsPanel.blocks[i]);
@@ -172,7 +152,6 @@ export class Game {
                 this.view.tipsPanel.blocks[i].setColor('blue');
                 this.view.drawArc(this.view.tipsPanel.blocks[i]);
             }
-            resultId++;
         }
     }
 }

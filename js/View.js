@@ -84,6 +84,11 @@ export class View {
 
     clearContext() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.blocksPanel.clearPanel();
+        this.tipsPanel.clearPanel();
+        this.colorsPanel.clearPanel();
+        this.resultPanel.clearPanel();
         this.renderPanel();
     }
 
@@ -103,7 +108,6 @@ export class View {
             }
         }
         
-
         for (let i = 1; i <= this.COLUMN; i++) {
             this.renderSingleBlock(this.resultPanel, 0, i-1, i, '#444');
         }
